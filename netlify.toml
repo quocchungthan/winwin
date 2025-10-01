@@ -1,6 +1,6 @@
 [build]
   functions = "functions"
-  publish = "dist"
+  publish = "dist/client"
 
 [dev]
   functions = "functions"
