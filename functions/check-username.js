@@ -1,7 +1,9 @@
 // Netlify function: check-username using sqlite3
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const DB_PATH = path.resolve(__dirname, '../db.sqlite');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+const DB_PATH = process.env.SQLITE_PATH || path.resolve(__dirname, '../db.sqlite');
 
 function openDb() {
   return new sqlite3.Database(DB_PATH);

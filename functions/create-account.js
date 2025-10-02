@@ -1,7 +1,10 @@
 // Netlify function: create-account using sqlite3
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const DB_PATH = path.resolve(__dirname, '../db.sqlite');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+const DB_PATH = process.env.SQLITE_PATH || path.resolve(__dirname, '../db.sqlite');
+const INITIAL_BALANCE = parseInt(process.env.INITIAL_BALANCE || '10000', 10);
 
 function openDb() {
   return new sqlite3.Database(DB_PATH);
@@ -44,7 +47,7 @@ exports.handler = async function(event) {
         return;
       }
       const guid = generateGuid();
-      const balance = 10000;
+      const balance = INITIAL_BALANCE;
       const mockFlag = 0;
       db.run('INSERT INTO accounts (guid, phone, displayName, balance, mockFlag) VALUES (?, ?, ?, ?, ?)',
         [guid, phone, displayName, balance, mockFlag], function(insertErr) {
