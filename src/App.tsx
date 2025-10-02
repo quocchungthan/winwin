@@ -20,8 +20,14 @@ function App() {
 
   return (
     <main>
-      <h1>Hello from TikTok Bầu Cua Tôm Cá!</h1>
-      <p>This is the skeleton app. To test the Netlify function, visit <code>/.netlify/functions/hello</code> after deploying.</p>
+      <h1>Đăng nhập Bầu Cua Tôm Cá</h1>
+      <p>Nhập số điện thoại và tên hiển thị để bắt đầu chơi.</p>
+      {/* Login Form UI */}
+      <div style={{ maxWidth: 400, margin: '0 auto' }}>
+        <LoginForm />
+      </div>
+      <hr />
+      <h2>Test Netlify Function</h2>
       <button onClick={callHelloFunction} disabled={loading}>
         {loading ? 'Calling...' : 'Call Hello Function'}
       </button>
@@ -30,4 +36,5 @@ function App() {
   );
 }
 
+import LoginForm from './LoginForm';
 export default App
