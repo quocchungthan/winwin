@@ -4,13 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-  "build": "npm run build:client && npm run build:server && npm run copy-db",
     "build:client": "vite build --outDir dist/client",
-    "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
-  "preview": "cross-env NODE_ENV=production node server",
-  "copy-db": "cp db.sqlite functions/db.sqlite",
-  "dev": "cross-env NODE_ENV=development vite",
-  "netlify": "netlify dev"
+    "dev": "cross-env NODE_ENV=development vite",
+    "netlify": "netlify dev"
   },
   "dependencies": {
     "compression": "^1.8.1",

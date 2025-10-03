@@ -1,23 +1,8 @@
-// Netlify function: check-username using sqlite3
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// Netlify function: check-username using MongoDB
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
-const DB_PATH = process.env.SQLITE_PATH || path.resolve(__dirname, '../db.sqlite');
-
-function openDb() {
-  return new sqlite3.Database(DB_PATH);
-}
-
-function ensureTable(db) {
-  db.run(`CREATE TABLE IF NOT EXISTS accounts (
-    guid TEXT PRIMARY KEY,
-    phone TEXT,
-    displayName TEXT UNIQUE,
-    balance INTEGER,
-    mockFlag INTEGER
-  )`);
-}
+const MONGO_URI = process.env.MONGO_CONNECTION;
 
 function randomName() {
   return 'user' + Math.floor(Math.random() * 10000);
@@ -31,35 +16,45 @@ exports.handler = async function(event) {
       body: JSON.stringify({ available: false, error: 'Missing displayName' })
     };
   }
-  return new Promise((resolve) => {
-    const db = openDb();
-    ensureTable(db);
-    db.get('SELECT * FROM accounts WHERE displayName = ?', [displayName], (err, row) => {
-      if (err) {
-        db.close();
-        resolve({ statusCode: 500, body: JSON.stringify({ available: false, error: 'DB error', details: err.message }) });
-        return;
-      }
-      let suggestion = '';
-      if (row) {
-        let tries = 0;
-        function trySuggest() {
-          suggestion = randomName();
-          db.get('SELECT * FROM accounts WHERE displayName = ?', [suggestion], (err2, row2) => {
-            if (!row2 || tries >= 10) {
-              db.close();
-              resolve({ statusCode: 200, body: JSON.stringify({ available: false, suggestion }) });
-            } else {
-              tries++;
-              trySuggest();
-            }
-          });
-        }
-        trySuggest();
-      } else {
-        db.close();
-        resolve({ statusCode: 200, body: JSON.stringify({ available: true, suggestion: '' }) });
-      }
-    });
+
+  const client = new MongoClient(MONGO_URI, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
   });
+
+  try {
+    await client.connect();
+    const db = client.db('winwin');
+    const accounts = db.collection('accounts');
+
+    const existing = await accounts.findOne({ displayName });
+    if (existing) {
+      // Suggest a random name not in use
+      let suggestion = '';
+      let tries = 0;
+      do {
+        suggestion = randomName();
+        const taken = await accounts.findOne({ displayName: suggestion });
+        if (!taken) break;
+        tries++;
+      } while (tries < 10);
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ available: false, suggestion })
+      };
+    } else {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ available: true, suggestion: '' })
+      };
+    }
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ available: false, error: 'DB error', details: err.message }) };
+  } finally {
+    await client.close();
+  }
 };
