@@ -6,11 +6,17 @@ const MONGO_URI = process.env.MONGO_CONNECTION;
 const INITIAL_BALANCE = parseInt(process.env.INITIAL_BALANCE || '10000', 10);
 
 exports.handler = async function(event) {
+  console.log('Received request:', event.httpMethod, event.body);
+
   if (event.httpMethod !== 'POST') {
+    console.log('Method not allowed');
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
   const { phone, displayName } = JSON.parse(event.body || '{}');
+  console.log('Parsed body:', { phone, displayName });
+
   if (!phone || !displayName) {
+    console.log('Missing phone or displayName');
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing phone or displayName' }) };
   }
 
@@ -24,12 +30,14 @@ exports.handler = async function(event) {
 
   try {
     await client.connect();
+    console.log('Connected to MongoDB');
     const db = client.db('winwin');
     const accounts = db.collection('accounts');
 
     // Check for duplicate displayName
     const existing = await accounts.findOne({ displayName });
     if (existing) {
+      console.log('DisplayName exists:', displayName);
       return { statusCode: 409, body: JSON.stringify({ error: 'Tên đã tồn tại.' }) };
     }
 
@@ -42,15 +50,19 @@ exports.handler = async function(event) {
       balance: INITIAL_BALANCE,
       mockFlag: false
     };
+    console.log('Creating account:', account);
     await accounts.insertOne(account);
 
+    console.log('Account created successfully');
     return {
       statusCode: 200,
       body: JSON.stringify(account)
     };
   } catch (err) {
+    console.error('DB error:', err);
     return { statusCode: 500, body: JSON.stringify({ error: 'DB error', details: err.message }) };
   } finally {
     await client.close();
+    console.log('MongoDB connection closed');
   }
 };
