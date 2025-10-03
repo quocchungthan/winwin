@@ -69,37 +69,52 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="login-form">
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Số điện thoại:</label>
+    <div className="login-form mt-4">
+      <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
+        <div className="mb-3">
+          <label className="form-label">Số điện thoại:</label>
           <input
             type="text"
+            className="form-control"
             value={phone}
             onChange={e => setPhone(e.target.value)}
             placeholder="Nhập số điện thoại"
             maxLength={11}
           />
         </div>
-        <div>
-          <label>Tên hiển thị:</label>
+        <div className="mb-3">
+          <label className="form-label">Tên hiển thị:</label>
           <input
             type="text"
+            className="form-control"
             value={displayName}
             onChange={e => setDisplayName(e.target.value)}
             onBlur={handleCheckUsername}
             placeholder="Nhập tên hiển thị"
           />
         </div>
-        {checking && <div>Đang kiểm tra tên...</div>}
-        {error && <div style={{ color: 'red' }}>{error}</div>}
-        {suggestion && <div>Gợi ý tên: <button type="button" onClick={() => setDisplayName(suggestion)}>{suggestion}</button></div>}
-        <button type="submit" disabled={loading}>Đăng nhập / Tạo tài khoản</button>
+        {checking && <div className="mb-2 text-primary">Đang kiểm tra tên...</div>}
+        {error && <div className="mb-2 text-danger">{error}</div>}
+        {suggestion && (
+          <div className="mb-2">
+            Gợi ý tên:{" "}
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setDisplayName(suggestion)}
+            >
+              {suggestion}
+            </button>
+          </div>
+        )}
+        <button type="submit" className="btn btn-success w-100" disabled={loading}>
+          {loading ? "Đang xử lý..." : "Đăng nhập / Tạo tài khoản"}
+        </button>
       </form>
       {account && (
-        <div className="balance-popup">
-          <h3>Chào mừng, {account.displayName}!</h3>
-          <p>Số dư ban đầu: {account.balance} VND</p>
+        <div className="alert alert-success mt-4 balance-popup">
+          <h5>Chào mừng, {account.displayName}!</h5>
+          <p>Số dư ban đầu: <strong>{account.balance} VND</strong></p>
         </div>
       )}
     </div>
